@@ -56,7 +56,7 @@ class Csrf implements CsrfInterface
      */
     public function getTokenField($name = null)
     {
-        $token = $this->getToken();
+        $token = $this->getToken($name);
         return '<input type="hidden" name="csrftoken" value="' . $token . '" />';
     }
 
