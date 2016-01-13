@@ -1,6 +1,6 @@
 # A small CSRF package for PHP
 
-Quickly generate and validate tokens to prevent Cross-Site Request Forgery (CSRF) attacks.
+Quickly generate and validate tokens to prevent Cross-Site Request Forgery (CSRF) attacks. 
 
 > *__Important:__ This package only helps you with the CSRF tokens. To truly be safe from CSRF, you also need to protect yourself against [Cross-site scripting (XSS)](https://en.wikipedia.org/wiki/Cross-site_scripting) as well.* 
 
@@ -24,6 +24,7 @@ $csrf = new Maer\Security\Csrf\Csrf();
 
 *__Important:__ You can create a new instance when ever in your application, but before you make any calls to it, you need to start the session yourself. This package does not make any assumptions on how you manage your sessions (you might use: session_start() or you might use Symfonys Session package etc...)*
 
+
 #### Approach 1: Manually add the hidden field ####
 ```
 <form method="post" action="...">
@@ -33,7 +34,6 @@ $csrf = new Maer\Security\Csrf\Csrf();
     ...
 
 </form>
-
 ```
 
 #### Approach 2: Generate the hidden field ####
@@ -48,6 +48,7 @@ $csrf = new Maer\Security\Csrf\Csrf();
 
 ```
 
+
 #### Validate
 When receiving the post:
 ```
@@ -58,5 +59,43 @@ if ($csrf->validateToken($_POST['csrftoken'])) {
 }
 ```
 
-## More...
-Above is the basic usage but there are some more stuff available. I'll update this guide soon...
+#### Named tokens
+
+All methods takes an optional `$name` argument. This gives you the option of having multiple tokens through out your application. For example:
+
+```
+$csrf->getToken();
+$csrf->getToken('login-form');
+$csrf->getToken('something-else');
+```
+The above will generate three different tokens and the same goes for the `getTokenField()`-method.
+
+To validate named tokens, set the name as the second argument to the `validateToken()`-method:
+
+```
+$csrf->validateToken($_POST['csrftoken'], 'login-form');
+```
+
+#### Regenerate tokens
+
+If you want to invalidate an existing token, use the `regenerateToken()`-method. This method also returns the new token, so if you want to have different tokens every time a form is loaded, you can use this method instead of `generateToken()`
+```
+$token = $csrf->regenerateToken();
+
+// or for a named token
+$token = $csrf->regenerateToken('login-form');
+```
+
+
+#### Reset/remove all tokens
+
+This will remove all tokens, named or not.
+```
+$csrf->resetAll();
+```
+
+
+## Note
+If you have any questions, suggestions or issues, let me know!
+
+Happy coding!
