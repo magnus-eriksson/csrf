@@ -59,6 +59,8 @@ if ($csrf->validateToken($_POST['csrftoken'])) {
 }
 ```
 
+## Extra goodies
+
 #### Named tokens
 
 All methods takes an optional `$name` argument. This gives you the option of having multiple tokens through out your application. For example:
