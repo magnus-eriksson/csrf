@@ -9,7 +9,7 @@ Quickly generate and validate tokens to prevent Cross-Site Request Forgery (CSRF
 
 Git clone or use composer to download the package with the following command:
 ```
-composer require maer/csrf 0.*
+composer require maer/csrf 1.*
 ```
 
 ## Usage
