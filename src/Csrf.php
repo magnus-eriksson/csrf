@@ -1,7 +1,7 @@
 <?php namespace Maer\Security\Csrf;
 /**
  * A small CSRF library for generating/verifying CSRF tokens
- * 
+ *
  * @author     Magnus Eriksson <mange@reloop.se>
  * @version    0.1.0
  * @package    Maer
@@ -43,14 +43,14 @@ class Csrf implements CsrfInterface
 
         $hName = $this->hashName($name);
         $token = isset($this->tokens[$hName]) ? $this->tokens[$hName]: null;
-        
+
         return $token?: $this->regenerateToken($name);
     }
 
 
     /**
      * Get html markup for a hidden input CSRF field
-     * 
+     *
      * @param  string   $name   If omitted, the default name will be used
      * @return string   Html markup
      */
@@ -63,7 +63,7 @@ class Csrf implements CsrfInterface
 
     /**
      * Validate a token
-     * 
+     *
      * @param  string   $userToken  The token to validate
      * @param  string   $name       If omitted, the default name will be used
      * @return bool
@@ -74,10 +74,10 @@ class Csrf implements CsrfInterface
         return !is_null($userToken) && $token === $userToken;
     }
 
-    
+
     /**
      * Regenerate a CSRF token
-     * 
+     *
      * @param  string   $name   If omitted, the default token will be regenerated
      */
     public function regenerateToken($name = null)
@@ -85,7 +85,7 @@ class Csrf implements CsrfInterface
         $this->initialize();
 
         $name                 = $this->hashName($name);
-        $this->tokens[$name]  = base64_encode(openssl_random_pseudo_bytes(64));
+        $this->tokens[$name]  = $this->getUniqueToken();
 
         if (!isset($_SESSION[$this->key]) || !is_array($_SESSION[$this->key])) {
             $_SESSION[$this->key] = [];
@@ -110,8 +110,50 @@ class Csrf implements CsrfInterface
 
 
     /**
+     * Generate a unique token using the best pseudo random generation
+     * for the current system
+     *
+     * @return string
+     */
+    protected function getUniqueToken()
+    {
+        $length = 64;
+
+        if (function_exists('random_bytes')) {
+            return base64_encode(random_bytes($length));
+        }
+
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            return base64_encode(openssl_random_pseudo_bytes($length));
+        }
+
+        if (function_exists('password_hash')) {
+            // We're using a cost of only 4 since it's not a matter
+            // of having a strong hash, but rather a random token
+            return base64_encode(password_hash(uniqid(), PASSWORD_DEFAULT, [
+                'cost' => 4
+            ]));
+        }
+
+        // It seems like we don't have any decent librarues installed
+        // that can produce a some what secure random string of bytes
+        // so let's use some old method (which won't be as secure)
+
+        // This is not a very cryptographically secure token, but without
+        // any other extensions, you can't really do that much.
+
+        $token = '';
+        for ($i = 0; $i < 4; $i++) {
+            $token .= uniqid(rand(0,10000));
+        }
+
+        return base64_encode(str_shuffle($token));
+    }
+
+
+    /**
      * Get current session tokens, if there are any.
-     * 
+     *
      * @return void
      */
     protected function initialize()
@@ -120,18 +162,18 @@ class Csrf implements CsrfInterface
             // Already initialized
             return true;
         }
-        
+
         if (session_status() !== PHP_SESSION_NONE) {
-            
+
             if (isset($_SESSION[$this->key]) && is_array($_SESSION[$this->key])) {
                 // Get the token collection from the session, if we got any
                 $this->tokens = $_SESSION[$this->key];
             }
-            
+
             $this->initialized = true;
 
         } else {
-            
+
             throw new CsrfSessionException('A session must be started before the Csrf library can be used');
 
         }
@@ -141,7 +183,7 @@ class Csrf implements CsrfInterface
     /**
      * Normalize and MD5 hash the name (this is not for security reasons
      * but rather to remove weird characters in the name)
-     * 
+     *
      * @param  string   $name   If omitted, the default token will be regenerated
      * @return string
      */
