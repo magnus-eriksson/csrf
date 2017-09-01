@@ -1,1 +1,0 @@
-<html><body><h2 id="CsrfTest">Csrf</h2><ul><li>Get token</li><li>Get unique token</li><li>Get token field</li><li>Validate token</li><li>Regenerate token</li><li><span style="text-decoration:line-through;">Reset all</span></li></ul></body></html>
